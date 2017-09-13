@@ -36,9 +36,18 @@ class QueryManager {
 
         //let's print each step to debug
         print("Query Followers")
+        
+        guard let id = PFUser.current()?.objectId else {
+            print("No user id, nothing to query")
+            
+            completionHandler(nil, 0) //nil objects and 0 news
+            return
+        }
+        
         //start finding followers
+
         let followQuery = PFQuery(className: "Follow")
-        followQuery.whereKey("follower", equalTo: PFUser.current()?.objectId! ?? String())
+        followQuery.whereKey("follower", equalTo: id)
         
         followQuery.findObjectsInBackground { [weak self](objects, error) in
             
@@ -63,6 +72,7 @@ class QueryManager {
                 //but first let's check if current follower contains an object for key "following"
                 guard let value = follower.object(forKey: "following") as? String else{
                     //just go to the next object
+                    print("Current follower is not following anyone, or the value is not a String")
                     continue
                 }
                 
